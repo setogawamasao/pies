@@ -3,7 +3,8 @@
 You can write programs using Three.js just like Unity or openFrameworks.
 
 ## Setup
-- Install Node.js(npm). 
+
+- Install Node.js(npm).
 - Excute these commands to install required packages.
   ```shell
     $ git clone https://github.com/umetaman/threejs_template
@@ -12,6 +13,7 @@ You can write programs using Three.js just like Unity or openFrameworks.
   ```
 
 ### Required Pakages
+
 - TypeScript
 - webpack
 - webpack-cli
@@ -40,11 +42,17 @@ This function uses requestAnimationFrame function.
 When you executed these commands, bundle.js will be created in ./build.
 
 Build
+
 ```shell
 $ npm run build
 ```
 
 Build automatically
+
 ```shell
 $ npm run watch
 ```
+
+### 参考
+
+https://threejs.org/examples/?q=panorama#webgl_panorama_equirectangular
