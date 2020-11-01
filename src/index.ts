@@ -58,15 +58,18 @@ class MyApp extends BaseApp {
   }
 
   public touchStart(event: TouchEvent): void {
+    console.log("start");
     this.controls.enabled = false;
   }
 
   public touchMove(event: TouchEvent): void {
+    console.log("move");
     this.isMove = true;
     this.controls.enabled = true;
   }
 
   public touchEnd(event: TouchEvent): void {
+    console.log("end");
     this.controls.enabled = true;
     if (!this.isMove) {
       this.change = !this.change;
@@ -85,6 +88,11 @@ class MyApp extends BaseApp {
     //console.log(this.change);
     if (this.change) {
       this.Scene.remove(this.mesh);
+      if (this.showImage === "R0010002.JPG") {
+        this.showImage = "R0010003.JPG";
+      } else {
+        this.showImage = "R0010002.JPG";
+      }
       this.texture = new THREE.TextureLoader().load(
         `./build/textures/${this.showImage}`
       );
@@ -92,11 +100,6 @@ class MyApp extends BaseApp {
       this.mesh = new THREE.Mesh(this.geometry, this.material);
       this.Scene.add(this.mesh);
       this.change = false;
-      if (this.showImage === "R0010002.JPG") {
-        this.showImage = "R0010003.JPG";
-      } else {
-        this.showImage = "R0010002.JPG";
-      }
     }
 
     this.speed += 0.001;
