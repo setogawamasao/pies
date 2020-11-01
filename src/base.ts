@@ -1,79 +1,90 @@
 import * as THREE from "three";
 import { Scene } from "three";
 
-export class BaseApp{
+export class BaseApp {
+  //Utils
+  public get Width(): number {
+    return window.innerWidth;
+  }
+  public get Height(): number {
+    return window.innerHeight;
+  }
+  public get Aspect(): number {
+    return this.Width / this.Height;
+  }
 
-    //Utils
-    public get Width(): number {
-        return window.innerWidth;
-    }
-    public get Height(): number {
-        return window.innerHeight;
-    }
-    public get Aspect(): number{
-        return this.Width / this.Height;
-    }
+  private renderer: THREE.WebGLRenderer;
+  private scene: THREE.Scene;
+  private camera: THREE.PerspectiveCamera;
+  private light: THREE.DirectionalLight;
 
-    private renderer: THREE.WebGLRenderer;
-    private scene: THREE.Scene;
-    private camera: THREE.PerspectiveCamera;
-    private light: THREE.DirectionalLight;
+  public get Renderer(): THREE.WebGLRenderer {
+    return this.renderer;
+  }
+  public get Scene(): THREE.Scene {
+    return this.scene;
+  }
+  public get Camera(): THREE.PerspectiveCamera {
+    return this.camera;
+  }
+  public get Light(): THREE.DirectionalLight {
+    return this.light;
+  }
 
-    public get Renderer(): THREE.WebGLRenderer{
-        return this.renderer;
-    }
-    public get Scene(): THREE.Scene{
-        return this.scene;
-    }
-    public get Camera(): THREE.PerspectiveCamera{
-        return this.camera;
-    }
-    public get Light(): THREE.DirectionalLight{
-        return this.light;
-    }
+  constructor() {
+    this.renderer = new THREE.WebGLRenderer({
+      antialias: true,
+    });
+    this.camera = new THREE.PerspectiveCamera();
+    this.light = new THREE.DirectionalLight();
+    this.scene = new THREE.Scene();
 
-    constructor(){
-        this.renderer = new THREE.WebGLRenderer({
-            antialias: true
-        });
-        this.camera = new THREE.PerspectiveCamera();
-        this.light = new THREE.DirectionalLight();
-        this.scene = new THREE.Scene();        
+    window.addEventListener("DOMContentLoaded", () => {
+      this.onLoaded();
+    });
+    window.addEventListener("resize", () => {
+      this.onResized();
+    });
 
-        window.addEventListener("DOMContentLoaded", () => {
-            this.onLoaded();
-        });
-        window.addEventListener("resize", () => {
-            this.onResized();
-        });
-    }
+    window.addEventListener("touchstart", (event: TouchEvent) => {
+      this.touchStart(event);
+    });
 
-    private onLoaded(): void {
-        this.renderer.domElement.setAttribute("id", "threejs_canvas");
-        document.body.appendChild(this.renderer.domElement);
+    window.addEventListener("touchmove", (event: TouchEvent) => {
+      this.touchMove(event);
+    });
 
-        const mainLoop = (): void => {
-            requestAnimationFrame(mainLoop);
-            this.Update();
-            this.renderer.render(this.scene, this.camera);
-        };
+    window.addEventListener("touchend", (event: TouchEvent) => {
+      this.touchEnd(event);
+    });
+  }
 
-        this.Setup();
-        mainLoop();
-    }
+  private onLoaded(): void {
+    this.renderer.domElement.setAttribute("id", "threejs_canvas");
+    document.body.appendChild(this.renderer.domElement);
 
-    private onResized(): void {
-        this.renderer.setSize(this.Width, this.Height);
-        this.renderer.setPixelRatio(window.devicePixelRatio);
-        this.camera.aspect = this.Width / this.Height;
-        this.camera.updateProjectionMatrix();
-    }
+    const mainLoop = (): void => {
+      requestAnimationFrame(mainLoop);
+      this.Update();
+      this.renderer.render(this.scene, this.camera);
+    };
 
-    public Setup(): void{
+    this.Setup();
+    mainLoop();
+  }
 
-    }
+  private onResized(): void {
+    this.renderer.setSize(this.Width, this.Height);
+    this.renderer.setPixelRatio(window.devicePixelRatio);
+    this.camera.aspect = this.Width / this.Height;
+    this.camera.updateProjectionMatrix();
+  }
 
-    public Update(): void{
+  public Setup(): void {}
 
-    }
+  public Update(): void {}
+
+  public touchStart(event: TouchEvent): void {}
+  public touchMove(event: TouchEvent): void {}
+  public touchEnd(event: TouchEvent): void {}
 }
