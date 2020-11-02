@@ -3,7 +3,6 @@ import { BaseApp } from "./base";
 import { OrbitControls } from "./jsm/controls/OrbitControls";
 
 class MyApp extends BaseApp {
-  // red bule green
   // X:赤 Y:緑 Z:青
   public axesHelper = new THREE.AxesHelper(10000);
   public controls = new OrbitControls(this.Camera, this.Renderer.domElement);
@@ -51,10 +50,62 @@ class MyApp extends BaseApp {
     this.material = new THREE.MeshBasicMaterial({ map: this.texture });
     this.mesh = new THREE.Mesh(this.geometry, this.material);
 
+    const loader1 = new THREE.FontLoader();
+    loader1.load("/build/fonts/helvetiker_regular.typeface.json", (font) => {
+      const matLite = new THREE.MeshBasicMaterial({
+        color: 0x006699,
+        transparent: true,
+        opacity: 1,
+        side: THREE.DoubleSide,
+      });
+      const message = "PIs";
+      //const shapes = font.generateShapes(message, 70);
+      const geometry = new THREE.TextBufferGeometry(message, {
+        font: font,
+        size: 70,
+        height: 5,
+      });
+      geometry.computeBoundingBox();
+      const xMid =
+        -(geometry.boundingBox.max.x - geometry.boundingBox.min.x) / 2;
+
+      geometry.translate(xMid, 0, 0);
+      const text = new THREE.Mesh(geometry, matLite);
+      text.rotateY(Math.PI / 2);
+      this.Scene.add(text);
+    });
+
+    const loader2 = new THREE.FontLoader();
+    loader2.load("/build/fonts/helvetiker_regular.typeface.json", (font) => {
+      const matLite = new THREE.MeshBasicMaterial({
+        color: 0x000000,
+        transparent: true,
+        opacity: 1,
+        side: THREE.DoubleSide,
+      });
+      const message = "SNS that shares space";
+      const shapes = font.generateShapes(message, 15);
+      //const geometry = new THREE.ShapeBufferGeometry(shapes);
+      const geometry = new THREE.TextBufferGeometry(message, {
+        font: font,
+        size: 15,
+        height: 5,
+      });
+      geometry.computeBoundingBox();
+      const xMid =
+        -(geometry.boundingBox.max.x - geometry.boundingBox.min.x) / 2;
+      const yTop = geometry.boundingBox.max.y - geometry.boundingBox.min.y;
+
+      geometry.translate(xMid, -(yTop + 5), 0);
+      const text = new THREE.Mesh(geometry, matLite);
+      text.rotateY(Math.PI / 2);
+      this.Scene.add(text);
+    });
+
     this.Scene.add(this.Light);
-    this.Scene.add(this.box);
+    //this.Scene.add(this.box);
     this.Scene.add(this.mesh);
-    this.Scene.add(this.axesHelper);
+    //this.Scene.add(this.axesHelper);
   }
 
   public touchStart(event: TouchEvent): void {
@@ -85,7 +136,7 @@ class MyApp extends BaseApp {
   };
 
   public Update(): void {
-    //console.log(this.change);
+    // console.log(this.change);
     if (this.change) {
       this.Scene.remove(this.mesh);
       if (this.showImage === "R0010002.JPG") {
