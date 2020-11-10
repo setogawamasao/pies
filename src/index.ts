@@ -76,7 +76,7 @@ class MyApp extends BaseApp {
     });
 
     const loader2 = new THREE.FontLoader();
-    loader2.load("/build/fonts/helvetiker_regular.typeface.json", (font) => {
+    loader2.load("./build/fonts/helvetiker_regular.typeface.json", (font) => {
       const matLite = new THREE.MeshBasicMaterial({
         color: 0xf6b7b9,
         transparent: true,
