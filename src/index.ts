@@ -51,56 +51,62 @@ class MyApp extends BaseApp {
     this.mesh = new THREE.Mesh(this.geometry, this.material);
 
     const loader1 = new THREE.FontLoader();
-    loader1.load("./build/fonts/helvetiker_regular.typeface.json", (font) => {
-      const matLite = new THREE.MeshBasicMaterial({
-        color: 0xb7d4db,
-        transparent: true,
-        opacity: 1,
-        side: THREE.DoubleSide,
-      });
-      const message = "PIs";
-      //const shapes = font.generateShapes(message, 70);
-      const geometry = new THREE.TextBufferGeometry(message, {
-        font: font,
-        size: 70,
-        height: 5,
-      });
-      geometry.computeBoundingBox();
-      const xMid =
-        -(geometry.boundingBox.max.x - geometry.boundingBox.min.x) / 2;
+    loader1.load(
+      "./pies/build/fonts/helvetiker_regular.typeface.json",
+      (font) => {
+        const matLite = new THREE.MeshBasicMaterial({
+          color: 0xb7d4db,
+          transparent: true,
+          opacity: 1,
+          side: THREE.DoubleSide,
+        });
+        const message = "PIs";
+        //const shapes = font.generateShapes(message, 70);
+        const geometry = new THREE.TextBufferGeometry(message, {
+          font: font,
+          size: 70,
+          height: 5,
+        });
+        geometry.computeBoundingBox();
+        const xMid =
+          -(geometry.boundingBox.max.x - geometry.boundingBox.min.x) / 2;
 
-      geometry.translate(xMid, 0, 0);
-      const text = new THREE.Mesh(geometry, matLite);
-      text.rotateY(Math.PI / 2);
-      this.Scene.add(text);
-    });
+        geometry.translate(xMid, 0, 0);
+        const text = new THREE.Mesh(geometry, matLite);
+        text.rotateY(Math.PI / 2);
+        this.Scene.add(text);
+      }
+    );
 
     const loader2 = new THREE.FontLoader();
-    loader2.load("./build/fonts/helvetiker_regular.typeface.json", (font) => {
-      const matLite = new THREE.MeshBasicMaterial({
-        color: 0xf6b7b9,
-        transparent: true,
-        opacity: 1,
-        side: THREE.DoubleSide,
-      });
-      const message = "SNS that shares space";
-      const shapes = font.generateShapes(message, 15);
-      //const geometry = new THREE.ShapeBufferGeometry(shapes);
-      const geometry = new THREE.TextBufferGeometry(message, {
-        font: font,
-        size: 18,
-        height: 5,
-      });
-      geometry.computeBoundingBox();
-      const xMid =
-        -(geometry.boundingBox.max.x - geometry.boundingBox.min.x) / 2;
-      const yTop = geometry.boundingBox.max.y - geometry.boundingBox.min.y;
+    loader2.load(
+      "./pies/build/fonts/helvetiker_regular.typeface.json",
+      (font) => {
+        const matLite = new THREE.MeshBasicMaterial({
+          color: 0xf6b7b9,
+          transparent: true,
+          opacity: 1,
+          side: THREE.DoubleSide,
+        });
+        const message = "SNS that shares space";
+        const shapes = font.generateShapes(message, 15);
+        //const geometry = new THREE.ShapeBufferGeometry(shapes);
+        const geometry = new THREE.TextBufferGeometry(message, {
+          font: font,
+          size: 18,
+          height: 5,
+        });
+        geometry.computeBoundingBox();
+        const xMid =
+          -(geometry.boundingBox.max.x - geometry.boundingBox.min.x) / 2;
+        const yTop = geometry.boundingBox.max.y - geometry.boundingBox.min.y;
 
-      geometry.translate(xMid, -(yTop + 5), 0);
-      const text = new THREE.Mesh(geometry, matLite);
-      text.rotateY(Math.PI / 2);
-      this.Scene.add(text);
-    });
+        geometry.translate(xMid, -(yTop + 5), 0);
+        const text = new THREE.Mesh(geometry, matLite);
+        text.rotateY(Math.PI / 2);
+        this.Scene.add(text);
+      }
+    );
 
     this.Scene.add(this.Light);
     //this.Scene.add(this.box);
