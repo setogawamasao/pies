@@ -51,9 +51,9 @@ class MyApp extends BaseApp {
     this.mesh = new THREE.Mesh(this.geometry, this.material);
 
     const loader1 = new THREE.FontLoader();
-    loader1.load("/build/fonts/helvetiker_regular.typeface.json", (font) => {
+    loader1.load("./build/fonts/helvetiker_regular.typeface.json", (font) => {
       const matLite = new THREE.MeshBasicMaterial({
-        color: 0x006699,
+        color: 0xb7d4db,
         transparent: true,
         opacity: 1,
         side: THREE.DoubleSide,
@@ -78,7 +78,7 @@ class MyApp extends BaseApp {
     const loader2 = new THREE.FontLoader();
     loader2.load("/build/fonts/helvetiker_regular.typeface.json", (font) => {
       const matLite = new THREE.MeshBasicMaterial({
-        color: 0x000000,
+        color: 0xf6b7b9,
         transparent: true,
         opacity: 1,
         side: THREE.DoubleSide,
@@ -88,7 +88,7 @@ class MyApp extends BaseApp {
       //const geometry = new THREE.ShapeBufferGeometry(shapes);
       const geometry = new THREE.TextBufferGeometry(message, {
         font: font,
-        size: 15,
+        size: 18,
         height: 5,
       });
       geometry.computeBoundingBox();
