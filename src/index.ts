@@ -9,17 +9,15 @@ class MyApp extends BaseApp {
   public geometryBox = new THREE.BoxGeometry(10, 50, 50);
   public materialBox = new THREE.MeshPhongMaterial({ color: 0xff0000 });
   public box = new THREE.Mesh(this.geometryBox, this.materialBox);
-  public showImage = "R0010002.JPG";
   public geometry = new THREE.SphereBufferGeometry(500, 60, 40);
-  public texture = new THREE.TextureLoader().load(
-    `./build/textures/${this.showImage}`
-  );
+  public texture = new THREE.TextureLoader().load(`./build/textures/${3}.jpg`);
   public material = new THREE.MeshBasicMaterial({ map: this.texture });
   public mesh = new THREE.Mesh(this.geometry, this.material);
   public speed = 0;
   public change = false;
   public touchStartPoint = new THREE.Vector2();
   public isMove = false;
+  public velocity = 0.001;
 
   public Setup(): void {
     console.log("This is Setup.");
@@ -45,7 +43,7 @@ class MyApp extends BaseApp {
     this.box.position.set(0, 0, 0);
 
     this.texture = new THREE.TextureLoader().load(
-      `./build/textures/${this.showImage}`
+      `./build/textures/${this.getRandomNumber()}.jpg`
     );
     this.material = new THREE.MeshBasicMaterial({ map: this.texture });
     this.mesh = new THREE.Mesh(this.geometry, this.material);
@@ -106,10 +104,12 @@ class MyApp extends BaseApp {
     //this.Scene.add(this.box);
     this.Scene.add(this.mesh);
     //this.Scene.add(this.axesHelper);
+    this.speed += 0.001;
   }
 
   public touchStart(event: TouchEvent): void {
     console.log("start");
+    this.velocity = 1;
     this.controls.enabled = false;
   }
 
@@ -121,6 +121,7 @@ class MyApp extends BaseApp {
 
   public touchEnd(event: TouchEvent): void {
     console.log("end");
+    this.velocity = 0.001;
     this.controls.enabled = true;
     if (!this.isMove) {
       this.change = !this.change;
@@ -139,13 +140,8 @@ class MyApp extends BaseApp {
     // console.log(this.change);
     if (this.change) {
       this.Scene.remove(this.mesh);
-      if (this.showImage === "R0010002.JPG") {
-        this.showImage = "R0010003.JPG";
-      } else {
-        this.showImage = "R0010002.JPG";
-      }
       this.texture = new THREE.TextureLoader().load(
-        `./build/textures/${this.showImage}`
+        `./build/textures/${this.getRandomNumber()}.jpg`
       );
       this.material = new THREE.MeshBasicMaterial({ map: this.texture });
       this.mesh = new THREE.Mesh(this.geometry, this.material);
@@ -153,9 +149,15 @@ class MyApp extends BaseApp {
       this.change = false;
     }
 
-    this.speed += 0.001;
+    this.speed += this.velocity;
+
     this.mesh.rotation.set(0, this.speed, 0);
   }
+
+  public getRandomNumber = (): string => {
+    const randomNumber = Math.floor(Math.random() * 8) + 1;
+    return String(randomNumber);
+  };
 }
 
 const app = new MyApp();
