@@ -1,5 +1,10 @@
 import * as THREE from "three";
 import { OrbitControls } from "./jsm/controls/OrbitControls";
+import { setRenderer } from "./3dElements/renderer";
+import { setCamera } from "./3dElements/camera";
+import { setControls } from "./3dElements/controls";
+import { setLight } from "./3dElements/light";
+import { setAxis } from "./3dElements/axis";
 
 class MyApp {
   renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -63,29 +68,29 @@ class MyApp {
     });
   }
 
-  private onLoaded(): void {
+  onLoaded = (): void => {
     document.querySelector("#canvas")?.appendChild(this.renderer.domElement);
 
     const mainLoop = (): void => {
       requestAnimationFrame(mainLoop);
-      this.Update();
+      this.update();
       this.renderer.render(this.scene, this.camera);
     };
 
     this.Setup();
     mainLoop();
-  }
+  };
 
-  private onResized(): void {
+  onResized = (): void => {
     this.renderer.setSize(this.Width, this.Height);
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.camera.aspect = this.Width / this.Height;
     this.camera.updateProjectionMatrix();
-  }
+  };
 
-  public Setup(): void {
+  Setup = (): void => {
     console.log("This is Setup.");
-    this.setControls();
+    setControls(this.controls, this.camera, this.renderer, this.update);
 
     this.renderer.setSize(this.Width, this.Height);
     this.renderer.setPixelRatio(window.devicePixelRatio);
@@ -171,9 +176,9 @@ class MyApp {
     this.speed += 0.001;
 
     this.objects.push();
-  }
+  };
 
-  public touchStart(event: TouchEvent): void {
+  touchStart = (event: TouchEvent): void => {
     console.log("touch start");
     // 平行移動させる平面の法線ベクトルをカメラの方向ベクトルに合わせる
     this.camera.getWorldDirection(this.plane.normal);
@@ -194,15 +199,15 @@ class MyApp {
     }
 
     this.controls.enabled = false;
-  }
+  };
 
-  public touchMove(event: TouchEvent): void {
+  touchMove = (event: TouchEvent): void => {
     console.log("move");
     this.isMove = true;
     this.controls.enabled = true;
-  }
+  };
 
-  public touchEnd(event: TouchEvent): void {
+  touchEnd = (event: TouchEvent): void => {
     console.log("touch end");
     this.velocity = 0.001;
     this.controls.enabled = true;
@@ -210,16 +215,9 @@ class MyApp {
       this.change = !this.change;
     }
     this.isMove = false;
-  }
-
-  private setControls = () => {
-    this.controls.maxPolarAngle = Math.PI;
-    this.controls.minDistance = 0.1;
-    this.controls.maxDistance = 600;
-    this.controls.addEventListener("change", this.Update);
   };
 
-  public Update(): void {
+  update = (): void => {
     if (this.change && this.isTouchedTarget) {
       console.log("image change");
       this.scene.remove(this.mesh);
@@ -237,9 +235,9 @@ class MyApp {
     this.speed += this.velocity;
 
     this.mesh.rotation.set(0, this.speed, 0);
-  }
+  };
 
-  public getRandomNumber = (): string => {
+  getRandomNumber = (): string => {
     const randomNumber = Math.floor(Math.random() * 8) + 1;
     return String(randomNumber);
   };
