@@ -1,11 +1,14 @@
 import * as THREE from "three";
-import { BaseApp } from "./base";
 import { OrbitControls } from "./jsm/controls/OrbitControls";
 
-class MyApp extends BaseApp {
-  // X:赤 Y:緑 Z:青
-  public axesHelper = new THREE.AxesHelper(10000);
-  public controls = new OrbitControls(this.Camera, this.Renderer.domElement);
+class MyApp {
+  renderer = new THREE.WebGLRenderer({ antialias: true });
+  scene = new THREE.Scene();
+  camera = new THREE.PerspectiveCamera();
+  light = new THREE.DirectionalLight();
+
+  public axesHelper = new THREE.AxesHelper(10000); // X:赤 Y:緑 Z:青
+  public controls = new OrbitControls(this.camera, this.renderer.domElement);
   public geometryBox = new THREE.BoxGeometry(50, 50, 50);
   public materialBox = new THREE.MeshPhongMaterial({ color: 0xff0000 });
   public box = new THREE.Mesh(this.geometryBox, this.materialBox);
@@ -29,24 +32,75 @@ class MyApp extends BaseApp {
   public objects = new Array<THREE.Object3D>();
   public isTouchedTarget = false;
 
+  public get Width(): number {
+    return window.innerWidth;
+  }
+  public get Height(): number {
+    return window.innerHeight;
+  }
+  public get Aspect(): number {
+    return this.Width / this.Height;
+  }
+
+  constructor() {
+    window.addEventListener("DOMContentLoaded", () => {
+      this.onLoaded();
+    });
+    window.addEventListener("resize", () => {
+      this.onResized();
+    });
+
+    window.addEventListener("touchstart", (event: TouchEvent) => {
+      this.touchStart(event);
+    });
+
+    window.addEventListener("touchmove", (event: TouchEvent) => {
+      this.touchMove(event);
+    });
+
+    window.addEventListener("touchend", (event: TouchEvent) => {
+      this.touchEnd(event);
+    });
+  }
+
+  private onLoaded(): void {
+    document.querySelector("#canvas")?.appendChild(this.renderer.domElement);
+
+    const mainLoop = (): void => {
+      requestAnimationFrame(mainLoop);
+      this.Update();
+      this.renderer.render(this.scene, this.camera);
+    };
+
+    this.Setup();
+    mainLoop();
+  }
+
+  private onResized(): void {
+    this.renderer.setSize(this.Width, this.Height);
+    this.renderer.setPixelRatio(window.devicePixelRatio);
+    this.camera.aspect = this.Width / this.Height;
+    this.camera.updateProjectionMatrix();
+  }
+
   public Setup(): void {
     console.log("This is Setup.");
     this.setControls();
 
-    this.Renderer.setSize(this.Width, this.Height);
-    this.Renderer.setPixelRatio(window.devicePixelRatio);
-    this.Renderer.setClearColor(0xffffff);
+    this.renderer.setSize(this.Width, this.Height);
+    this.renderer.setPixelRatio(window.devicePixelRatio);
+    this.renderer.setClearColor(0xffffff);
 
-    this.Camera.fov = 90;
-    this.Camera.aspect = this.Aspect;
-    this.Camera.near = 1;
-    this.Camera.far = 1100;
-    this.Camera.updateProjectionMatrix();
-    this.Camera.position.set(400, 0, 0);
-    this.Camera.lookAt(0, 0, 0);
+    this.camera.fov = 90;
+    this.camera.aspect = this.Aspect;
+    this.camera.near = 1;
+    this.camera.far = 1100;
+    this.camera.updateProjectionMatrix();
+    this.camera.position.set(400, 0, 0);
+    this.camera.lookAt(0, 0, 0);
 
-    this.Light.position.set(1, 1, 1);
-    this.Light.color.set(0xffffff);
+    this.light.position.set(1, 1, 1);
+    this.light.color.set(0xffffff);
     this.geometry = new THREE.SphereBufferGeometry(500, 60, 40);
     this.geometry.scale(-1, 1, 1);
     this.box.position.set(0, 0, 0);
@@ -78,7 +132,7 @@ class MyApp extends BaseApp {
       geometry.translate(xMid, 0, 0);
       const text = new THREE.Mesh(geometry, matLite);
       text.rotateY(Math.PI / 2);
-      this.Scene.add(text);
+      this.scene.add(text);
       this.objects.push(text);
     });
 
@@ -106,14 +160,14 @@ class MyApp extends BaseApp {
       geometry.translate(xMid, -(yTop + 5), 0);
       const text = new THREE.Mesh(geometry, matLite);
       text.rotateY(Math.PI / 2);
-      this.Scene.add(text);
+      this.scene.add(text);
       this.objects.push(text);
     });
 
-    this.Scene.add(this.Light);
-    this.Scene.add(this.box);
-    //this.Scene.add(this.mesh);
-    //this.Scene.add(this.axesHelper);
+    this.scene.add(this.light);
+    //this.Scene.add(this.box);
+    this.scene.add(this.mesh);
+    this.scene.add(this.axesHelper);
     this.speed += 0.001;
 
     this.objects.push();
@@ -122,12 +176,12 @@ class MyApp extends BaseApp {
   public touchStart(event: TouchEvent): void {
     console.log("touch start");
     // 平行移動させる平面の法線ベクトルをカメラの方向ベクトルに合わせる
-    this.Camera.getWorldDirection(this.plane.normal);
+    this.camera.getWorldDirection(this.plane.normal);
     // 画面上で指を動かした量から、三次元空間の移動量を決定する
     this.touchPoint.x = (event.touches[0].pageX / window.innerWidth) * 2 - 1;
     this.touchPoint.y = -(event.touches[0].pageY / window.innerHeight) * 2 + 1;
     // タッチ点とカメラのレイキャストを設定
-    this.rayCaster.setFromCamera(this.touchPoint, this.Camera);
+    this.rayCaster.setFromCamera(this.touchPoint, this.camera);
 
     // オブジェクト群から、マウスとカメラの方向ベクトルの先にあるオブジェクト(平行移動させる物体)を抽出する。
     const intersects = this.rayCaster.intersectObjects(this.objects);
@@ -168,13 +222,13 @@ class MyApp extends BaseApp {
   public Update(): void {
     if (this.change && this.isTouchedTarget) {
       console.log("image change");
-      this.Scene.remove(this.mesh);
+      this.scene.remove(this.mesh);
       this.texture = new THREE.TextureLoader().load(
         `./build/textures/${this.getRandomNumber()}.jpg`
       );
       this.material = new THREE.MeshBasicMaterial({ map: this.texture });
       this.mesh = new THREE.Mesh(this.geometry, this.material);
-      this.Scene.add(this.mesh);
+      this.scene.add(this.mesh);
 
       this.change = false;
       this.isTouchedTarget = false;
