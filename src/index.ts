@@ -5,47 +5,20 @@ import { setCamera } from "./3dElements/camera";
 import { setControls } from "./3dElements/controls";
 import { setLight } from "./3dElements/light";
 import { setAxis } from "./3dElements/axis";
+import { setSphere } from "./3dElements/imageSphere";
+import { setAppTitleText } from "./3dElements/appTitleText";
 
 class MyApp {
   renderer = new THREE.WebGLRenderer({ antialias: true });
   scene = new THREE.Scene();
   camera = new THREE.PerspectiveCamera();
-  light = new THREE.DirectionalLight();
-
-  public axesHelper = new THREE.AxesHelper(10000); // X:赤 Y:緑 Z:青
-  public controls = new OrbitControls(this.camera, this.renderer.domElement);
-  public geometryBox = new THREE.BoxGeometry(50, 50, 50);
-  public materialBox = new THREE.MeshPhongMaterial({ color: 0xff0000 });
-  public box = new THREE.Mesh(this.geometryBox, this.materialBox);
-  public geometry = new THREE.SphereBufferGeometry(500, 60, 40);
-  public texture = new THREE.TextureLoader().load(`./build/textures/${4}.jpg`);
-  public material = new THREE.MeshBasicMaterial({ map: this.texture });
-  public mesh = new THREE.Mesh(this.geometry, this.material);
-  public speed = 0;
-  public change = false;
-  public touchStartPoint = new THREE.Vector2();
-  public isMove = false;
-  public velocity = 0.001;
-  //========================
-  public plane = new THREE.Plane();
-  public rayCaster = new THREE.Raycaster();
-  public touchPoint = new THREE.Vector2();
-  public touchPointRot = new THREE.Vector2();
-  public offset = new THREE.Vector3();
-  public intersection = new THREE.Vector3();
-  // オブジェクトを格納する配列
-  public objects = new Array<THREE.Object3D>();
-  public isTouchedTarget = false;
-
-  public get Width(): number {
-    return window.innerWidth;
-  }
-  public get Height(): number {
-    return window.innerHeight;
-  }
-  public get Aspect(): number {
-    return this.Width / this.Height;
-  }
+  controls = new OrbitControls(this.camera, this.renderer.domElement);
+  // 360 sphere
+  imageSphere = new THREE.Mesh();
+  sphereRotationY = 0;
+  sphereVelocity = 0.001;
+  changeImageObjects = new Array<THREE.Object3D>();
+  isChangeImageObject = false;
 
   constructor() {
     window.addEventListener("DOMContentLoaded", () => {
@@ -54,15 +27,12 @@ class MyApp {
     window.addEventListener("resize", () => {
       this.onResized();
     });
-
     window.addEventListener("touchstart", (event: TouchEvent) => {
       this.touchStart(event);
     });
-
     window.addEventListener("touchmove", (event: TouchEvent) => {
       this.touchMove(event);
     });
-
     window.addEventListener("touchend", (event: TouchEvent) => {
       this.touchEnd(event);
     });
@@ -70,176 +40,81 @@ class MyApp {
 
   onLoaded = (): void => {
     document.querySelector("#canvas")?.appendChild(this.renderer.domElement);
+    this.setup();
+    this.mainLoop();
+  };
 
-    const mainLoop = (): void => {
-      requestAnimationFrame(mainLoop);
-      this.update();
-      this.renderer.render(this.scene, this.camera);
-    };
-
-    this.Setup();
-    mainLoop();
+  mainLoop = (): void => {
+    requestAnimationFrame(this.mainLoop);
+    this.update();
+    this.renderer.render(this.scene, this.camera);
   };
 
   onResized = (): void => {
-    this.renderer.setSize(this.Width, this.Height);
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.setPixelRatio(window.devicePixelRatio);
-    this.camera.aspect = this.Width / this.Height;
+    this.camera.aspect = window.innerWidth / window.innerHeight;
     this.camera.updateProjectionMatrix();
   };
 
-  Setup = (): void => {
-    console.log("This is Setup.");
+  setup = (): void => {
+    setRenderer(this.renderer);
+    setCamera(this.camera);
+    setLight(this.scene);
     setControls(this.controls, this.camera, this.renderer, this.update);
-
-    this.renderer.setSize(this.Width, this.Height);
-    this.renderer.setPixelRatio(window.devicePixelRatio);
-    this.renderer.setClearColor(0xffffff);
-
-    this.camera.fov = 90;
-    this.camera.aspect = this.Aspect;
-    this.camera.near = 1;
-    this.camera.far = 1100;
-    this.camera.updateProjectionMatrix();
-    this.camera.position.set(400, 0, 0);
-    this.camera.lookAt(0, 0, 0);
-
-    this.light.position.set(1, 1, 1);
-    this.light.color.set(0xffffff);
-    this.geometry = new THREE.SphereBufferGeometry(500, 60, 40);
-    this.geometry.scale(-1, 1, 1);
-    this.box.position.set(0, 0, 0);
-    this.texture = new THREE.TextureLoader().load(
-      `./build/textures/${this.getRandomNumber()}.jpg`
-    );
-    this.material = new THREE.MeshBasicMaterial({ map: this.texture });
-    this.mesh = new THREE.Mesh(this.geometry, this.material);
-
-    const loader1 = new THREE.FontLoader();
-    loader1.load("./build/fonts/helvetiker_regular.typeface.json", (font) => {
-      const matLite = new THREE.MeshBasicMaterial({
-        color: 0xb7d4db,
-        transparent: true,
-        opacity: 1,
-        side: THREE.DoubleSide,
-      });
-      const message = "PIs";
-      //const shapes = font.generateShapes(message, 70);
-      const geometry = new THREE.TextBufferGeometry(message, {
-        font: font,
-        size: 70,
-        height: 5,
-      });
-      geometry.computeBoundingBox();
-      const xMid =
-        -(geometry.boundingBox.max.x - geometry.boundingBox.min.x) / 2;
-
-      geometry.translate(xMid, 0, 0);
-      const text = new THREE.Mesh(geometry, matLite);
-      text.rotateY(Math.PI / 2);
-      this.scene.add(text);
-      this.objects.push(text);
-    });
-
-    const loader2 = new THREE.FontLoader();
-    loader2.load("./build/fonts/helvetiker_regular.typeface.json", (font) => {
-      const matLite = new THREE.MeshBasicMaterial({
-        color: 0xf6b7b9,
-        transparent: true,
-        opacity: 1,
-        side: THREE.DoubleSide,
-      });
-      const message = "SNS that shares space";
-      const shapes = font.generateShapes(message, 15);
-      //const geometry = new THREE.ShapeBufferGeometry(shapes);
-      const geometry = new THREE.TextBufferGeometry(message, {
-        font: font,
-        size: 18,
-        height: 5,
-      });
-      geometry.computeBoundingBox();
-      const xMid =
-        -(geometry.boundingBox.max.x - geometry.boundingBox.min.x) / 2;
-      const yTop = geometry.boundingBox.max.y - geometry.boundingBox.min.y;
-
-      geometry.translate(xMid, -(yTop + 5), 0);
-      const text = new THREE.Mesh(geometry, matLite);
-      text.rotateY(Math.PI / 2);
-      this.scene.add(text);
-      this.objects.push(text);
-    });
-
-    this.scene.add(this.light);
-    //this.Scene.add(this.box);
-    this.scene.add(this.mesh);
-    this.scene.add(this.axesHelper);
-    this.speed += 0.001;
-
-    this.objects.push();
+    setAxis(this.scene);
+    setSphere(this.imageSphere, this.scene);
+    setAppTitleText(this.scene, this.changeImageObjects);
+    // ============debug============
+    // const geometryBox = new THREE.BoxGeometry(50, 50, 50);
+    // const materialBox = new THREE.MeshPhongMaterial({ color: 0xff0000 });
+    // const box = new THREE.Mesh(geometryBox, materialBox);
+    // this.scene.add(box);
+    // ============debug============
   };
 
   touchStart = (event: TouchEvent): void => {
-    console.log("touch start");
     // 平行移動させる平面の法線ベクトルをカメラの方向ベクトルに合わせる
-    this.camera.getWorldDirection(this.plane.normal);
+    const plane = new THREE.Plane();
+    this.camera.getWorldDirection(plane.normal);
     // 画面上で指を動かした量から、三次元空間の移動量を決定する
-    this.touchPoint.x = (event.touches[0].pageX / window.innerWidth) * 2 - 1;
-    this.touchPoint.y = -(event.touches[0].pageY / window.innerHeight) * 2 + 1;
+    const touchPoint = new THREE.Vector2();
+    touchPoint.x = (event.touches[0].pageX / window.innerWidth) * 2 - 1;
+    touchPoint.y = -(event.touches[0].pageY / window.innerHeight) * 2 + 1;
     // タッチ点とカメラのレイキャストを設定
-    this.rayCaster.setFromCamera(this.touchPoint, this.camera);
-
+    const rayCaster = new THREE.Raycaster();
+    rayCaster.setFromCamera(touchPoint, this.camera);
     // オブジェクト群から、マウスとカメラの方向ベクトルの先にあるオブジェクト(平行移動させる物体)を抽出する。
-    const intersects = this.rayCaster.intersectObjects(this.objects);
-
+    const intersects = rayCaster.intersectObjects(this.changeImageObjects);
     // マウスとカメラの方向ベクトルの先にオブジェクトがあったとき
     if (intersects.length > 0) {
-      this.velocity = 1;
-      this.isTouchedTarget = true;
-      console.log("touched");
+      console.log("exist object");
+      this.sphereVelocity = 1;
+      this.isChangeImageObject = true;
     }
-
     this.controls.enabled = false;
   };
 
   touchMove = (event: TouchEvent): void => {
-    console.log("move");
-    this.isMove = true;
     this.controls.enabled = true;
   };
 
   touchEnd = (event: TouchEvent): void => {
-    console.log("touch end");
-    this.velocity = 0.001;
+    this.sphereVelocity = 0.001;
     this.controls.enabled = true;
-    if (!this.isMove) {
-      this.change = !this.change;
-    }
-    this.isMove = false;
   };
 
   update = (): void => {
-    if (this.change && this.isTouchedTarget) {
+    // change image
+    if (this.isChangeImageObject) {
       console.log("image change");
-      this.scene.remove(this.mesh);
-      this.texture = new THREE.TextureLoader().load(
-        `./build/textures/${this.getRandomNumber()}.jpg`
-      );
-      this.material = new THREE.MeshBasicMaterial({ map: this.texture });
-      this.mesh = new THREE.Mesh(this.geometry, this.material);
-      this.scene.add(this.mesh);
-
-      this.change = false;
-      this.isTouchedTarget = false;
+      this.scene.remove(this.imageSphere);
+      setSphere(this.imageSphere, this.scene);
+      this.isChangeImageObject = false; // reset flag
     }
-
-    this.speed += this.velocity;
-
-    this.mesh.rotation.set(0, this.speed, 0);
-  };
-
-  getRandomNumber = (): string => {
-    const randomNumber = Math.floor(Math.random() * 8) + 1;
-    return String(randomNumber);
+    // rotate image sphere
+    this.sphereRotationY += this.sphereVelocity;
+    this.imageSphere.rotation.set(0, this.sphereRotationY, 0);
   };
 }
 
